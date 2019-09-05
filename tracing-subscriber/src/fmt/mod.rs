@@ -10,7 +10,7 @@
 //!
 //! [`tracing`]: https://crates.io/crates/tracing
 //! [`Subscriber`]: https://docs.rs/tracing/latest/tracing/trait.Subscriber.html
-use std::{any::TypeId, cell::RefCell, fmt, io};
+use std::{any::TypeId, cell::RefCell, io};
 use tracing_core::{subscriber::Interest, Event, Metadata};
 
 pub mod format;
@@ -21,8 +21,11 @@ pub mod writer;
 use crate::layer::{self, Layer};
 
 #[doc(inline)]
-pub use self::{format::FormatEvent, span::Context, writer::MakeWriter};
-use crate::field::MakeVisitor;
+pub use self::{
+    format::{FormatEvent, FormatFields},
+    span::Context,
+    writer::MakeWriter,
+};
 
 /// A `Subscriber` that logs formatted representations of `tracing` events.
 #[derive(Debug)]
@@ -221,7 +224,7 @@ where
 {
     /// Finish the builder, returning a new `FmtSubscriber`.
     pub fn finish(self) -> layer::Layered<F, Subscriber<N, E, W>> {
-        FmtSubscriber {
+        let subscriber = Subscriber {
             fmt_fields: self.fmt_fields,
             fmt_event: self.fmt_event,
             spans: span::Store::with_capacity(self.settings.initial_span_capacity),
@@ -330,7 +333,7 @@ impl<N, E, F, W> Builder<N, E, F, W> {
     ///     .finish();
     /// # drop(subscriber)
     /// ```
-    pub fn fmt_fields<N2>(self, fmt_fields: N2) -> Builder<N2, E, F>
+    pub fn fmt_fields<N2>(self, fmt_fields: N2) -> Builder<N2, E, F, W>
     where
         N2: for<'writer> FormatFields<'writer> + 'static,
     {
@@ -438,7 +441,7 @@ impl<N, E, F, W> Builder<N, E, F, W> {
         W2: MakeWriter + 'static,
     {
         Builder {
-            new_visitor: self.new_visitor,
+            fmt_fields: self.fmt_fields,
             fmt_event: self.fmt_event,
             filter: self.filter,
             settings: self.settings,
