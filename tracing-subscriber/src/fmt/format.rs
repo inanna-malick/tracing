@@ -236,6 +236,8 @@ where
     }
 }
 
+/// The default formatting for fields.
+#[derive(Debug)]
 pub struct DefaultFields;
 
 pub struct Visitor<'a> {
