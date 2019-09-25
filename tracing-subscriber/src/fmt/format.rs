@@ -246,6 +246,15 @@ pub struct Visitor<'a> {
     result: fmt::Result,
 }
 
+impl<'a> fmt::Debug for Visitor<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Visitor")
+            .field("is_empty", &self.is_empty)
+            .field("result", &self.result)
+            .finish()
+    }
+}
+
 impl<'a> Visitor<'a> {
     pub fn new(writer: &'a mut dyn Write, is_empty: bool) -> Self {
         Self {
@@ -503,6 +512,14 @@ pub struct FieldFnVisitor<'a, F> {
     f: F,
     writer: &'a mut dyn fmt::Write,
     result: fmt::Result,
+}
+
+impl<'a, F> fmt::Debug for FieldFnVisitor<'a, F> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FieldFnVisitor")
+            .field("result", &self.result)
+            .finish()
+    }
 }
 
 impl<'a, F> Visit for FieldFnVisitor<'a, F>
